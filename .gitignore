@@ -1,0 +1,9 @@
+# Editor directories and files
+.idea
+.vscode
+.git
+venv
+
+all .pyc
+
+db.sqlite3
