@@ -1,88 +1,82 @@
-import { Hill } from './hill.js';
-import { MenuList } from './menu-list.js';
-import { Star } from './star.js';
+import { Circle } from "./circle.js";
+import { MenuList } from "./menu-list.js";
 
-class MenuSelect {
+class Menu {
     constructor() {
         this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
         document.body.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext('2d');
+        this.pixelRatio = (window.devicePixelRatio > 1) ? 2 : 1;
 
-        this.hill = [
-            new Hill('#9F9F7D', 0.2, 12),
-            new Hill('#D6D6A4', 0.5, 8),
-            new Hill('#F1945A', 1.4, 6)
-        ];
+        this.circle = new Circle('#FFFFFF');
+        this.menu = [
+            "RGB",
+            "Ninja",
+            "Net"
+        ]
+        this.menuList = new MenuList(15);
 
-        this.menuList = new MenuList();
-
-        this.stars = [];
-        for (let i = 0; i < 40; i++) {
-            this.stars.push(new Star());
-        }
+        this.moveX = 0;
+        this.moveY = 0;
+        this.drag = false;
+        this.dist = 0;
 
         window.addEventListener('resize', this.resize.bind(this), false);
         this.resize();
 
-        this.menuList.addMenu([
-            'rgb',
-            'strings'
-        ]);
+        document.addEventListener('pointerdown', this.onDown.bind(this), false);
+        document.addEventListener('pointermove', this.onMove.bind(this), false);
+        document.addEventListener('pointerup', this.onUp.bind(this), false);
 
-        document.addEventListener("pointerdown", this.toNext.bind(this), false);
-
-        requestAnimationFrame(this.animate.bind(this));
+        window.requestAnimationFrame(this.animate.bind(this));
     }
 
     resize() {
         this.stageWidth = document.body.clientWidth;
         this.stageHeight = document.body.clientHeight;
 
-        this.canvas.width = this.stageWidth * 2;
-        this.canvas.height = this.stageHeight * 2;
-        this.ctx.scale(2, 2);
+        this.maxRadius = this.stageWidth;
+        this.minRadius = this.stageHeight;
 
-        for (let i = 0; i < this.hill.length; i++) {
-            this.hill[i].resize(this.stageWidth, this.stageHeight);
-        }
+        this.canvas.width = this.stageWidth * this.pixelRatio;
+        this.canvas.height = this.stageHeight * this.pixelRatio;
+        this.ctx.scale(this.pixelRatio, this.pixelRatio);
 
         this.menuList.resize(this.stageWidth, this.stageHeight);
+        this.menuList.addMenu(this.menu);
 
-        for (let i = 0; i < 40; i++) {
-            this.stars[i].resize(this.stageWidth, this.stageHeight);
-        }
+        this.circle.resize(this.stageWidth, this.stageHeight);
     }
 
-    animate(t) {
-        requestAnimationFrame(this.animate.bind(this));
+    animate() {
+        window.requestAnimationFrame(this.animate.bind(this));
+
         this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
 
-        let dots;
-
-        for (let i = 0; i < 40; i++) {
-            this.stars[i].draw(this.ctx);
-        }
-
-        for (let i = 0; i < this.hill.length; i++) {
-            dots = this.hill[i].draw(this.ctx);
-        }
-
-        this.menuList.draw(this.ctx, t, dots);
+        this.circle.draw(this.ctx);
+        this.menuList.draw(this.ctx, this.dist);
     }
 
-    toNext(e) {
-        for (let i = 0; i < 2; i++) {
-            const item = this.menuList.items[i];
-            if (e.clientX >= item.x - item.menuWidthHalf &&
-                e.clientX <= item.x + item.menuWidthHalf &&
-                e.clientY >= item.y - item.menuHeight &&
-                e.clientY <= item.y) {
-                document.location.href += item.name;
-            }
+    onDown(e) {
+        this.moveX = e.clientX;
+        this.moveY = e.clientY;
+        if (this.moveY > this.stageHeight / 2) this.drag = true;
+    }
+
+    onMove(e) {
+        if (this.drag) {
+            this.dist = e.clientX - this.moveX;
         }
     }
-};
+
+    onUp(e) {
+        this.moveX = 0;
+        this.moveY = 0;
+        this.dist = 0;
+        this.drag = false;
+    }
+}
 
 window.onload = () => {
-    const menuSelect = new MenuSelect();
-};
+    new Menu();
+}

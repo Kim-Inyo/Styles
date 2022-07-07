@@ -6,6 +6,9 @@ def home(request):
 def menu(request):
     return render(request, 'users/menu-select.html')
 
+def ninja(request):
+    return render(request, 'users/ninja.html')
+
 def rgb(request):
     return render(request, 'users/rgb.html')
 

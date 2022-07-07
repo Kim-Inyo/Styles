@@ -1,8 +1,10 @@
-import { Menu } from './menu.js'
+import { Menu } from "./menu.js";
 
 export class MenuList {
-    constructor() {
+    constructor(menuCount) {
         this.items = [];
+        this.itemCount = menuCount;
+        this.menuCount = 0;
     }
 
     resize(stageWidth, stageHeight) {
@@ -11,19 +13,19 @@ export class MenuList {
     }
 
     addMenu(menu) {
-        for (let i = 0; i < menu.length; i++) {
-            const img = new Image();
-            const initX = this.stageWidth - (this.stageWidth / (menu.length)) * i;
-            img.src = '../../static/users/images/' + menu[i] + '.png';
-            this.items.push(new Menu(img, menu[i], this.stageWidth, initX));
-        }
+        this.menuCount += menu.length;
+        for (let i = 0; i < this.itemCount; i++)
+            this.items.push(new Menu(menu[i % menu.length], this.stageWidth, this.stageHeight,
+                Math.PI / 18 * 12 / (this.itemCount), i));
     }
 
-    draw(ctx, t, dots) {
-        for (let i = this.items.length - 1; i >= 0; i--) {
-            const item = this.items[i];
-            if (item.x < -item.width) this.items.splice(i, 1);
-            else item.draw(ctx, t, dots);
+    draw(ctx, dist) {
+        var index = -1;
+        for (let i = 0; i < this.items.length; i++) {
+            const temp = this.items[i].draw(ctx, dist, 0);
+            if (temp >= 0) index = temp;
         }
+        //this.items[0].draw(ctx, dist, 0);
+        if (index >= 0) this.items[index].draw(ctx, dist, 40);
     }
 }
